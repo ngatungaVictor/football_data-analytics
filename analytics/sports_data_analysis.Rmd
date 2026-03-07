@@ -1,0 +1,103 @@
+---
+title: "football insights"
+author: "Victor T. Ngatunga"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(caret)
+library(readr)
+library(randomForest)
+```
+
+
+```{r importing dataset}
+ E0 <- read_csv("~/Downloads/E0.csv")
+ECHO=FALSE
+
+```
+ 
+ Dataset- CSV english Premier League
+```{r Creating match result variable}
+E0$Result <- ifelse(E0$FTHG > E0$FTAG, 1,
+             ifelse(E0$FTHG < E0$FTAG, -1, 0))
+```
+meaning 1:home win, 0:draw, -1: away win
+
+```{r selecting features}
+data <- E0 %>%
+  select(HS, AS, HST, AST, Result) %>%
+  na.omit()
+ECHO=FALSE
+```
+HomeTeam, AwayTeam
+
+FTHG – Full time home goals
+FTAG – Full time away goals
+HS, AS – total shots home, away
+HST, AST – shots on target home, away
+
+```{r training/ test split}
+set.seed(123)
+
+train_index <- createDataPartition(data$Result, p = 0.8, list = FALSE)
+
+train <- data[train_index, ]
+test  <- data[-train_index, ]
+```
+
+```{r training model}
+model <- randomForest(as.factor(Result) ~ HS + AS + HST + AST,
+                      data = train,
+                      ntree = 500)
+
+model
+```
+
+```{r Prediction basing on the model}
+pred <- predict(model, test)
+```
+
+```{r Model evaluation}
+confusionMatrix(pred, as.factor(test$Result))
+
+```
+
+```{r Feature importance}
+varImpPlot(model)
+```
+shows what influence results the most.
+
+```{r quick visualization}
+ggplot(E0, aes(x = HS, y = FTHG)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm") +
+  labs(title = "Home Shots vs Home Goals")
+```
+
+```{r }
+ggplot(E0, aes(x=HST, y=FTHG, color=Result)) +
+  geom_jitter(width=0.2, height=0.2, alpha=0.6) +
+  geom_smooth(method="lm", se=FALSE, linetype="dotted") +
+  labs(title="Home Shots on Target vs Home Goals by Match Outcome",
+       x="Home Shots on Target", y="Home Goals") +
+  theme_minimal()
+```
+
+Key Observations:
+
+Precision beats volume: The scatter plot shows that matches with more shots on target (HST) tend to result in more goals for the home team, regardless of total shots.
+
+Outcome clustering: Wins (colored points) are concentrated at higher shots-on-target values, while draws and losses cluster at lower values. This visually confirms the strong relationship between shot efficiency and match success.
+
+Strategic insight: Focusing on converting shots into targets is a stronger driver for scoring than merely increasing shot attempts, highlighting a key performance metric for teams.
+
+Recruiter-relevant takeaway: This visualization demonstrates the ability to turn raw match statistics into actionable insights, showing analytical thinking, attention to detail, and understanding of football data, exactly the skills required for a Sports Data Collector role.
