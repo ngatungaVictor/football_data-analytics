@@ -24,4 +24,4 @@ This project explores football match data to understand the relationship between
 - R: `dplyr`, `ggplot2`, `caret`, `randomForest`  
 - Skills demonstrated: data cleaning, analysis, visualization, predictive modeling.
 
-**This mini-project demonstrates ability to collect, analyze, and visualize football data — skills directly relevant to a Sports Data Collector role.**
+**This mini-project demonstrates ability to collect, analyze, and visualize football data.**
